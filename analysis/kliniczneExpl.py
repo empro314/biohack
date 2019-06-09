@@ -2,7 +2,23 @@
 import pandas as pd
 import numpy as np
 
+#%%
 
+def writeList(where, what) :
+    with open(where, 'w+') as file :
+        for i in what :
+            file.write("%s\n" % i)
+
+def readList(where) :
+    res = []
+    
+    with open(where, 'r') as file : 
+        for i in file :
+            res.append(i[:-1])
+    
+    return res
+
+zapiszListyPref = '../dataSets/'
 #%% wczytywanie danych
 dataPref = '../data/predicting_response/'
 
@@ -29,6 +45,10 @@ intKlin = pd.concat([mergedKlin, mergedKlinTest]).iloc[:, 0:3]
 
 mergedFull = pd.concat([label, covar], axis = 1)
 
+nowe = ['Enrollment IC', 'Met Disease Status']
+
+
+
 #%% start 
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
@@ -52,3 +72,23 @@ from sklearn.linear_model import LinearRegression
 
 compl = LinearRegression()
 compl.fit(subTrening.iloc[:, 1:], subTrening.iloc[:, 0])
+
+#%%inputed
+
+imputed = pd.read_csv('/Users/empro/Documents/HR/contests/bioHack/analysis/final/imputed.txt', sep = '\t', header = None, names = ['klin1', 'klin2', 'klin3'])
+
+
+#%%
+
+mergedFull = pd.concat([imputed, mergedFull], axis = 1)
+
+newList = ['klin1', 'klin2', 'klin3'] #+ nowe
+
+xTrain, xTest, yTrain, yTest = train_test_split(mergedFull.loc[:, newList], mergedFull.loc[:, 'label'], test_size = 0.25, random_state = 42)
+
+mergedKlin = pd.concat([yTrain, xTrain], axis = 1)
+mergedKlinTest = pd.concat([yTest, xTest], axis = 1)
+
+mergedKlin.to_csv('./final/mergedKlin.csv')
+mergedKlinTest.to_csv('./final/mergedKlinTest.csv')
+writeList('./final/newList', newList)
